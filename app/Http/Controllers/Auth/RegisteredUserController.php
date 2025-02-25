@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rules\Password;
+use App\Notifications\VerifyEmailNotification;
+
 
 class RegisteredUserController extends Controller
 {
@@ -38,8 +40,19 @@ class RegisteredUserController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z\s]+$/', // Use regex for pattern matching
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:users',
+            ],
             'password' => [
                 'required',
                 'confirmed',

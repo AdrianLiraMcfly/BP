@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\User;
 
 class CheckActiveUser
 {
@@ -17,18 +17,13 @@ class CheckActiveUser
      */
     public function handle(Request $request, Closure $next)
     {
-        $user = auth()->user();
-        if ($user && $user->active === 'A') {
-            return $next($request);
+        // Check if the authentication token is present
+        $token = cookie('token');
+        if (!$token || !JWTAuth::setToken($token)->authenticate()) {
+            return redirect()->route('login')->with('error', 'You need to login first');
         }
 
-        //Invalidate the jwt token and redirect to login page
-        if($token = JWTAuth::getToken()){
-            JWTAuth::setToken($token)->invalidate();
-            session()->flush();
-        }
-        
-        auth()->logout();
-        return redirect('/login')->with('error', 'Your account is not active.');
+        // If the user is active, continue with the request
+        return $next($request);
     }
 }

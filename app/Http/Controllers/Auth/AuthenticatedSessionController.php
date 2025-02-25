@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -30,7 +32,7 @@ class AuthenticatedSessionController extends Controller
         // Validate the user login request including the captcha
         $validatedData = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string',
+            'password' => 'required',
             'g-recaptcha-response' => 'required',
         ]);
     
@@ -40,41 +42,38 @@ class AuthenticatedSessionController extends Controller
             'response' => $request->input('g-recaptcha-response'),
         ]);
     
-        // If the captcha verification fails, return back with an error message
         if (! $response['success']) {
             return redirect()->back()
                              ->withErrors(['g-recaptcha-response' => 'Captcha verification failed.'])
                              ->withInput();
         }
+
+        // Find the user in the database
+        $user = User::where('email', $validatedData['email'])->first();
     
-        // Attempt to authenticate the user
-        if (Auth::guard('web')->attempt($validatedData)) {
-            // $request->session()->regenerate(); // Uncomment if you need to regenerate the session
+        // Verify if the user exists, is active, and the password is valid
+        if ($user && $user->active==='A' && Hash::check($validatedData['password'], $user->password)) {
+            // Generate a signed URL for two-factor verification
+            $signedUrl = URL::signedRoute('two-factor.index', ['user' => $user->id],);
     
-            return redirect()->route('two-factor.index');
+            return redirect($signedUrl);
         }
     
-        // If the authentication fails, return back with an error message
         return redirect()->back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'The provided credentials do not match our records or the account is inactive.',
         ])->withInput();
     }
+
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Invalidate the token and logout the user
-        if($token = $request->cookie('token')) {
+        // Invalidate the token if it exists
+        if ($token = $request->cookie('token')) {
             JWTAuth::setToken($token)->invalidate();
         }
-
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-        
+    
         // Redirect to the home page and remove the token cookie
         return redirect('/')->withCookie(cookie()->forget('token'));
     }

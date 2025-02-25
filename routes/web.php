@@ -24,13 +24,12 @@ Route::get('/', function () {
 //    return view('dashboard');
 //})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['active'])->group(function () {
-    Route::get('/two-factor', [TwoFactorController::class, 'index'])->name('two-factor.index');
+    Route::get('/two-factor/{user}', [TwoFactorController::class, 'index'])->name('two-factor.index')->middleware('signed');
     Route::post('/two-factor', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
     Route::post('/two-factor/resend', [TwoFactorController::class, 'resend'])->name('two-factor.resend');
-});
+    
 
-Route::middleware(['2fa', 'active', 'jwt'])->group(function () {
+Route::middleware(['jwt'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');

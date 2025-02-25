@@ -13,6 +13,9 @@
                         <!-- Formulario para verificar el código -->
                         <form method="POST" action="{{ route('two-factor.verify') }}">
                             @csrf
+                            <!-- Campo oculto para el ID del usuario -->
+                            <input type="hidden" name="user" value="{{ $userId }}">
+
                             <div class="mb-3">
                                 <x-input-label for="code" :value="__('Two Factor Code')" />
                                 <x-text-input 
@@ -26,7 +29,14 @@
                                 />
                                 <x-input-error :messages="$errors->get('code')" class="mt-2" />
                             </div>
-                            
+
+                            <!-- reCAPTCHA -->
+                            <div class="mt-4">
+                                <x-input-label for="recaptcha" :value="__('reCAPTCHA')" />
+                                <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                                <x-input-error :messages="$errors->get('g-recaptcha-response')" class="mt-2" />
+                                <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+                            </div>
 
                             <x-primary-button class="w-100 mt-3">
                                 {{ __('Verify') }}
@@ -36,18 +46,21 @@
                         <!-- Botón para reenviar el código -->
                         <form method="POST" action="{{ route('two-factor.resend') }}" class="mt-3">
                             @csrf
+                            <!-- Campo oculto para el ID del usuario -->
+                            <input type="hidden" name="user" value="{{ $userId }}">
+
                             <x-primary-button class="w-100">
                                 {{ __('Resend Code') }}
                             </x-primary-button>
                         </form>
 
                         @if (session('success'))
-                                <div class="alert alert-success text-center">
-                                    {{ session('success') }}
-                                </div>
-                            @endif
-                            
-                            @if (session('error'))
+                            <div class="alert alert-success text-center">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        
+                        @if (session('error'))
                             <div class="alert alert-danger mt-4 text-center">
                                 {{ session('error') }}
                             </div>

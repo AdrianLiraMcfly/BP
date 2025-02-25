@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 
 class Verify2FA
@@ -17,8 +18,11 @@ class Verify2FA
      */
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->check() && !session('two_factor_verified')) {
-            return redirect('/two-factor');
+        $token = $request->cookie('token');
+        $user = JWTAuth::setToken($token)->toUser();
+        if ($user->active === 'I') {
+            JWTAuth::invalidate($token);
+            return redirect()->route('login')->with('error', 'Your account is not active');
         }
         return $next($request);
     }
