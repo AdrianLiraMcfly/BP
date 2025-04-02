@@ -37,6 +37,8 @@ Route::middleware(['jwt'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/logout', [TwoFactorController::class, 'logout'])->name('logout');
+
 });
 
 Route::get('/error', function () {
