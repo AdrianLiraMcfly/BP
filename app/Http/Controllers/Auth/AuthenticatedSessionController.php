@@ -69,12 +69,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Invalidate the token if it exists
-        if ($token = $request->cookie('token')) {
-            JWTAuth::setToken($token)->invalidate();
-        }
-    
-        // Redirect to the home page and remove the token cookie
-        return redirect('/')->withCookie(cookie()->forget('token'));
+            // Invalidar el token JWT actual
+    JWTAuth::invalidate(JWTAuth::getToken());
+
+    // Eliminar la cookie del token
+    $deleteCookie = cookie()->forget('token');
+
+    // Redirigir al login con mensaje de éxito y sin el token en la cookie
+    return redirect()->route('login')
+                     ->with('success', 'You have been logged out successfully.')
+                     ->withCookie($deleteCookie);
     }
 }
