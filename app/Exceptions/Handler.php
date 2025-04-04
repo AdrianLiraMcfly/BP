@@ -51,13 +51,22 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
-        // Si es una petición API, devuelve JSON
+        // Si la petición es de tipo JSON (como en APIs), dejamos que Laravel lo maneje
         if ($request->expectsJson()) {
-            return response()->json(['error' => 'Ocurrió un error inesperado'], 500);
+            return parent::render($request, $exception);
         }
-
-        // Redirige a tu vista personalizada para CUALQUIER error
-        return response()->view('errors.server', [], 500);
+    
+        // Obtenemos la respuesta por defecto de Laravel
+        $response = parent::render($request, $exception);
+    
+        // Si el error es del tipo 500, mostramos nuestra vista personalizada
+        if ($response->getStatusCode() === 500) {
+            return response()->view('errors.server', [], 500);
+        }
+    
+        // Para cualquier otro tipo de error, dejamos la respuesta tal como Laravel la genera
+        return $response;
     }
+    
         
 }
