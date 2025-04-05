@@ -39,13 +39,10 @@
                         </x-dropdown-link>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout.destroy') }}">
-                            @csrf
                             <x-dropdown-link href="{{ route('logout.destroy') }}"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
-                        </form>
                         
                         
                     </x-slot>
