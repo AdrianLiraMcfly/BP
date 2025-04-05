@@ -51,6 +51,7 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
+        /*
         // Si la petición es de tipo JSON (como en APIs), dejamos que Laravel lo maneje
         if ($request->expectsJson()) {
             return parent::render($request, $exception);
@@ -66,6 +67,9 @@ class Handler extends ExceptionHandler
     
         // Para cualquier otro tipo de error, dejamos la respuesta tal como Laravel la genera
         return $response;
+        */
+
+        return parent::render($request, $exception);
     }
     
         
