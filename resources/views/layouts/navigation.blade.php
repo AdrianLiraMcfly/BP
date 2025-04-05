@@ -40,12 +40,12 @@
 
                         <!-- Authentication -->
                         <!-- Usando route('logout.destroy') en vez de route('logout') -->
-<form method="POST" action="{{ route('logout.destroy') }}">
-    @csrf
-    <x-dropdown-link href="#" onclick="event.preventDefault(); this.closest('form').submit();">
-        {{ __('Log Out') }}
-    </x-dropdown-link>
-</form>
+                <form method="POST" action="{{ route('logout.destroy') }}">
+                    @csrf
+                    <x-dropdown-link href="#" onclick="event.preventDefault(); this.closest('form').submit();">
+                        {{ __('Log Out') }}
+                    </x-dropdown-link>
+                </form>
                     </x-slot>
                 </x-dropdown>
             </div>
@@ -83,14 +83,11 @@
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout.destroy') }}">
                     @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
+                    <x-dropdown-link href="#" onclick="event.preventDefault(); this.closest('form').submit();">
                         {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    </x-dropdown-link>
                 </form>
             </div>
         </div>
