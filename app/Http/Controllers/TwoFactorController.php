@@ -135,18 +135,4 @@ class TwoFactorController extends Controller
         });
     }
 
-        public function logout(Request $request)
-    {
-        try {
-            // Invalidar el token JWT actual
-            JWTAuth::invalidate(JWTAuth::getToken());
-
-            // Redirigir al usuario a la página de inicio de sesión con un mensaje de éxito
-            return redirect()->route('login')->with('success', 'You have been logged out successfully.');
-        } catch (\Exception $e) {
-            // Manejar errores en caso de que no se pueda invalidar el token
-            Log::error('Logout failed:', ['error' => $e->getMessage()]);
-            return redirect()->route('login')->with('error', 'An error occurred while logging out.');
-        }
-    }
     }

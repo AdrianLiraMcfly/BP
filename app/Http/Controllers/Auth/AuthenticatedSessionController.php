@@ -69,7 +69,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-            // Invalidar el token JWT actual
     JWTAuth::invalidate(JWTAuth::getToken());
 
     // Eliminar la cookie del token
