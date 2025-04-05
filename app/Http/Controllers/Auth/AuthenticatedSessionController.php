@@ -67,21 +67,4 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
-    {
-        if ($token = JWTAuth::getToken()) {
-            JWTAuth::invalidate($token);
-        }
-
-        // Clear the token cookie explicitly
-        $deleteCookie = cookie('token', null, -1, '/', null, false, true);
-
-
-        // Redirect to login with success message and without the token in the cookie
-        return response()
-    ->redirectToRoute('login')
-    ->withCookie($deleteCookie)
-    ->with('success', 'You have been logged out successfully.');
-
-    }
 }
