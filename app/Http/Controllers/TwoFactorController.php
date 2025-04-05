@@ -139,21 +139,22 @@ class TwoFactorController extends Controller
 
     public function destroy(Request $request)
     {
-        // Obtener el token directamente desde la cookie
-        $token = $request->cookie('token');
-    
-        // Invalida el token solo si existe
-        if ($token) {
+        // Invalidar el token JWT si existe
+        if ($token = $request->cookie('token')) {
             JWTAuth::setToken($token)->invalidate();
         }
     
-        // Borrar la cookie explícitamente
+        // Cerrar la sesión de Laravel
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    
+        // Eliminar la cookie
         $deleteCookie = cookie('token', null, -1, '/', null, false, true);
     
-        return response()
-            ->redirectToRoute('login')
+        return redirect()->route('login')
             ->withCookie($deleteCookie)
-            ->with('success', 'You have been logged out successfully.');
+            ->with('success', 'Has cerrado sesión correctamente.');
     }
     
 
