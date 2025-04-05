@@ -89,7 +89,9 @@ class TwoFactorController extends Controller
             // Generar un nuevo token JWT y redirigir al dashboard
             $newToken = JWTAuth::fromUser($user);
             
-            return redirect()->route('dashboard')->withCookie(cookie('token', $newToken, 60));
+            return redirect()
+            ->route('dashboard')
+            ->withCookie(cookie('token', $newToken, 60, '/', null, false, true));
         }
     
         return back()->with('error', 'Invalid code, please try again with a valid code.');
