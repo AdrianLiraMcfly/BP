@@ -39,15 +39,13 @@
                         </x-dropdown-link>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
+                        <!-- Usando route('logout.destroy') en vez de route('logout') -->
+<form method="POST" action="{{ route('logout.destroy') }}">
+    @csrf
+    <x-dropdown-link href="#" onclick="event.preventDefault(); this.closest('form').submit();">
+        {{ __('Log Out') }}
+    </x-dropdown-link>
+</form>
                     </x-slot>
                 </x-dropdown>
             </div>
