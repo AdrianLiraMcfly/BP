@@ -36,72 +36,82 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
-    {
-        // Validate the request data
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                'regex:/^[a-zA-Z\s]+$/', // Use regex for pattern matching
-            ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                'unique:users',
-            ],
-            'password' => [
-                'required',
-                'confirmed',
-                Password::min(8) // must be at least 8 characters long
-                    ->mixedCase() // must contain uppercase and lowercase letters
-                    ->letters() // must contain letters
-                    ->numbers() // must contain numbers
-                    ->symbols() // must contain symbols
-                    ->uncompromised(), // verify if the password has been compromised in a data breach
-            ],
-            'g-recaptcha-response' => 'required',
-        ]);
-    
-        // Verify the captcha
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $request->input('g-recaptcha-response'),
-        ]);
-    
-        // If the captcha verification fails, redirect back with an error message
-        if (! $response['success']) {
-            return redirect()->back()
-                ->withErrors(['g-recaptcha-response' => 'Captcha verification failed.'])
-                ->withInput();
-        }
-    
-        // Generate a verification token
-        $verification_token = Crypt::encryptString(Str::random(16));
-    
-        // Create a new user
-        $user = User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
-            'verify_token' => $verification_token,
-        ]);
-    
-        // Trigger the Registered event
-        event(new Registered($user));
-    
-        // Send the verification email
-        Mail::send('emails.verify', ['user' => $user, 'verification_token' => $verification_token], function($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Please verify your email address');
-        });
-    
-        // Redirect to the login page with a success message
-        return redirect()->route('login')->with('success', 'We have sent you a verification email.');
+
+public function store(Request $request): RedirectResponse
+{
+    // Define validation rules
+    $validator = Validator::make($request->all(), [
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+            'regex:/^[a-zA-Z\s]+$/', // Use regex for pattern matching
+        ],
+        'email' => [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            'unique:users',
+        ],
+        'password' => [
+            'required',
+            'confirmed',
+            Password::min(8) // must be at least 8 characters long
+                ->mixedCase() // must contain uppercase and lowercase letters
+                ->letters() // must contain letters
+                ->numbers() // must contain numbers
+                ->symbols() // must contain symbols
+                ->uncompromised(), // verify if the password has been compromised in a data breach
+        ],
+        'g-recaptcha-response' => 'required',
+    ]);
+
+    // Check if validation fails
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
     }
+
+    $validatedData = $validator->validated();
+
+    // Verify the captcha
+    $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+        'secret' => env('RECAPTCHA_SECRET_KEY'),
+        'response' => $request->input('g-recaptcha-response'),
+    ]);
+
+    // If the captcha verification fails, redirect back with an error message
+    if (! $response['success']) {
+        return redirect()->back()
+            ->withErrors(['g-recaptcha-response' => 'Captcha verification failed.'])
+            ->withInput();
+    }
+
+    // Generate a verification token
+    $verification_token = Crypt::encryptString(Str::random(16));
+
+    // Create a new user
+    $user = User::create([
+        'name' => $validatedData['name'],
+        'email' => $validatedData['email'],
+        'password' => Hash::make($validatedData['password']),
+        'verify_token' => $verification_token,
+    ]);
+
+    // Trigger the Registered event
+    event(new Registered($user));
+
+    // Send the verification email
+    Mail::send('emails.verify', ['user' => $user, 'verification_token' => $verification_token], function($message) use ($user) {
+        $message->to($user->email);
+        $message->subject('Please verify your email address');
+    });
+
+    // Redirect to the login page with a success message
+    return redirect()->route('login')->with('success', 'We have sent you a verification email.');
+}
 
     public function verify($token)
     {
