@@ -52,7 +52,6 @@ public function store(Request $request): RedirectResponse
             'string',
             'email',
             'max:255',
-            'unique:users',
         ],
         'password' => [
             'required',
