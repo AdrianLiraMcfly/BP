@@ -91,6 +91,12 @@ public function store(Request $request): RedirectResponse
     // Generate a verification token
     $verification_token = Crypt::encryptString(Str::random(16));
 
+    if (User::where('email', $validatedData['email'])->exists()) {
+        return redirect()->back()
+            ->withErrors(['email' => 'The email has already been taken.'])
+            ->withInput();
+    }
+
     // Create a new user
     $user = User::create([
         'name' => $validatedData['name'],
